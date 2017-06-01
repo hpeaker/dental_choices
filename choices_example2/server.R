@@ -30,15 +30,45 @@ names(d3) <- c("Attributes", "Alternative 1", "Alternative 2")
 d4 <- d[, c("Attributes", "4", "21")]
 names(d4) <- c("Attributes", "Alternative 1", "Alternative 2")
 
+d5 <- d[, c("Attributes", "4", "23")]
+names(d5) <- c("Attributes", "Alternative 1", "Alternative 2")
+d6 <- d[, c("Attributes", "4", "29")]
+names(d6) <- c("Attributes", "Alternative 1", "Alternative 2")
+d7 <- d[, c("Attributes", "4", "42")]
+names(d7) <- c("Attributes", "Alternative 1", "Alternative 2")
+d8 <- d[, c("Attributes", "4", "52")]
+names(d8) <- c("Attributes", "Alternative 1", "Alternative 2")
+
+
 
 
 server <- function(input, output, session) {
-  observe(print(reactiveValuesToList(input)))
+  
+  rv <- reactiveValues(page = 1)
+  
+  observe({
+    toggleState(id = "prevBtn", condition = rv$page > 1)
+    toggleState(id = "nextBtn", condition = rv$page < NUM_PAGES)
+    hide(selector = ".page")
+    show(sprintf("step%s", rv$page))
+  })
+  
+  navPage <- function(direction) {
+    rv$page <- rv$page + direction
+  }
+  
+  observeEvent(input$prevBtn, navPage(-1))
+  observeEvent(input$nextBtn, navPage(1))
   
   callModule(choiceDataTable, "one", d1)
   callModule(choiceDataTable, "two", d2)
   callModule(choiceDataTable, "three", d3)
   callModule(choiceDataTable, "four", d4)
+  
+  callModule(choiceDataTable, "five", d5)
+  callModule(choiceDataTable, "six", d6)
+  callModule(choiceDataTable, "seven", d7)
+  callModule(choiceDataTable, "eight", d8)
   
 }
 

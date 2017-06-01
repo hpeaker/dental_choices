@@ -38,7 +38,6 @@ choiceDataTable <- function(input, output, session, data) {
   
   observeEvent(input$dt_columns_selected, {
     r <- input$dt_columns_selected
-    print(r)
     s <- if(r == 1) {
       "Alternative 1"
     } else if (r == 2) {
