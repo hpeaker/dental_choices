@@ -7,37 +7,29 @@ experiment <- expand.grid(
   aroma = c("yes","no")
 )
 
-df1 <- data.frame(
-  Attributes = c("Price", "Colour", "Kind", "Aroma"),
-  Alternative1 = t(experiment[1,]),
-  Alternative2 = t(experiment[10,])
-)
-
-colnames(df1) <- c("Attributes", "Alternative 1", "Alternative 2")
-
-design<-caFactorialDesign(data=experiment,type="orthogonal")
+design <- caFactorialDesign(data = experiment,type="orthogonal")
 
 d <- as.data.frame(t(as.data.frame(design)))
 
 d$Attributes <- rownames(d)
-d1 <- d[, c("Attributes", "4", "9")]
-names(d1) <- c("Attributes", "Alternative 1", "Alternative 2")
+d1 <- d[, c("4", "9")]
+names(d1) <- c("Alternative 1", "Alternative 2")
 
-d2 <- d[, c("Attributes", "4", "10")]
-names(d2) <- c("Attributes", "Alternative 1", "Alternative 2")
-d3 <- d[, c("Attributes", "4", "17")]
-names(d3) <- c("Attributes", "Alternative 1", "Alternative 2")
-d4 <- d[, c("Attributes", "4", "21")]
-names(d4) <- c("Attributes", "Alternative 1", "Alternative 2")
+d2 <- d[, c("4", "10")]
+names(d2) <- c("Alternative 1", "Alternative 2")
+d3 <- d[, c("4", "17")]
+names(d3) <- c("Alternative 1", "Alternative 2")
+d4 <- d[, c("4", "21")]
+names(d4) <- c("Alternative 1", "Alternative 2")
 
-d5 <- d[, c("Attributes", "4", "23")]
-names(d5) <- c("Attributes", "Alternative 1", "Alternative 2")
-d6 <- d[, c("Attributes", "4", "29")]
-names(d6) <- c("Attributes", "Alternative 1", "Alternative 2")
-d7 <- d[, c("Attributes", "4", "42")]
-names(d7) <- c("Attributes", "Alternative 1", "Alternative 2")
-d8 <- d[, c("Attributes", "4", "52")]
-names(d8) <- c("Attributes", "Alternative 1", "Alternative 2")
+d5 <- d[, c("4", "23")]
+names(d5) <- c("Alternative 1", "Alternative 2")
+d6 <- d[, c("4", "29")]
+names(d6) <- c("Alternative 1", "Alternative 2")
+d7 <- d[, c("4", "42")]
+names(d7) <- c("Alternative 1", "Alternative 2")
+d8 <- d[, c("4", "52")]
+names(d8) <- c("Alternative 1", "Alternative 2")
 
 
 
@@ -53,6 +45,32 @@ server <- function(input, output, session) {
     show(sprintf("step%s", rv$page))
   })
   
+  observe({
+    if(rv$page == 2) {
+      if(length(a1()) == 0 || length(a2()) == 0 || length(a3()) == 0 || length(a4()) == 0) {
+        disable(id = "nextBtn")
+        return()
+      } else if(a1() == "None" || a2() == "None" || a3() == "None" || a4() == "None") {
+        disable(id = "nextBtn")
+      } else {
+        enable(id = "nextBtn")
+      }
+    }
+  })
+  
+  observe({
+    if(rv$page == 3) {
+      if(length(a5()) == 0 || length(a6()) == 0 || length(a7()) == 0 || length(a8()) == 0) {
+        disable(id = "nextBtn")
+        return()
+      } else if(a5() == "None" || a6() == "None" || a7() == "None" || a8() == "None") {
+        disable(id = "nextBtn")
+      } else {
+        enable(id = "nextBtn")
+      }
+    }
+  })
+  
   navPage <- function(direction) {
     rv$page <- rv$page + direction
   }
@@ -60,15 +78,86 @@ server <- function(input, output, session) {
   observeEvent(input$prevBtn, navPage(-1))
   observeEvent(input$nextBtn, navPage(1))
   
-  callModule(choiceDataTable, "one", d1)
-  callModule(choiceDataTable, "two", d2)
-  callModule(choiceDataTable, "three", d3)
-  callModule(choiceDataTable, "four", d4)
   
-  callModule(choiceDataTable, "five", d5)
-  callModule(choiceDataTable, "six", d6)
-  callModule(choiceDataTable, "seven", d7)
-  callModule(choiceDataTable, "eight", d8)
+  output$distPlot <- renderPlot({
+    ggplot(dat.frame, aes(responses_df$var1)) +
+      geom_density(adjust = 1/2) +
+      geom_vline(xintercept = input$var1) +
+      theme_void()
+    
+  })
+  output$message <- renderPrint({
+    if (input$var1 < 30) {
+      print("You belong to the 50 percent LEAST preventive people")
+    }
+    else {
+      print("You belong to the 50 percent MOST preventive people")
+    }
+  })
+  
+  observe({
+    # check if all mandatory fields have a value
+    mandatoryFilled <-
+      vapply(fieldsMandatory,
+             function(x) {
+               !is.null(input[[x]]) && input[[x]] != ""
+             },
+             logical(1))
+    mandatoryFilled <- all(mandatoryFilled)
+    # enable/disable the submit button
+    shinyjs::toggleState(id = "submit", condition = mandatoryFilled)
+  })
+  
+  formData <- reactive({
+    data <- sapply(fieldsAll, function(x) input[[x]])
+    data <- c(data, choice1 = a1(), choice2 = a2(), choice3 = a3(),
+              choice4 = a4(), choice5 = a5(), choice6 = a6(),
+              choice7 = a7(), choice8 = a8(), likerts())
+    data <- c(data, timestamp = epochTime())
+    data <- t(data)
+    data
+  })
+  
+  
+  saveData <- function(data) {
+    fileName <- sprintf("%s_%s.csv",
+                        epochTime(),
+                        digest::digest(data))
+    
+    write.csv(
+      x = data,
+      file = file.path(responsesDir, fileName),
+      row.names = FALSE,
+      quote = TRUE
+    )
+  }
+  
+  observeEvent(input$submit, {
+    saveData(formData())
+    shinyjs::hide("likert_input")
+    shinyjs::show("thankyou_msg")
+  })
+  
+  
+  a1 <- callModule(choiceDataTable, "one", d1)
+  a2 <- callModule(choiceDataTable, "two", d2)
+  a3 <- callModule(choiceDataTable, "three", d3)
+  a4 <- callModule(choiceDataTable, "four", d4)
+  
+  a5 <- callModule(choiceDataTable, "five", d5)
+  a6 <- callModule(choiceDataTable, "six", d6)
+  a7 <- callModule(choiceDataTable, "seven", d7)
+  a8 <- callModule(choiceDataTable, "eight", d8)
+  
+  likerts <- callModule(likertQuestions, "likert")
+  
+  output$likert_plot <- renderPlot({
+    likert_frame <- dat.frame[, grepl("likert", names(dat.frame))]
+    likert_frame[,] <- lapply(likert_frame, function(x) factor(x, levels = likert_choices))
+    
+    likert_summ <- likert(likert_frame)
+    plot(likert_summ)
+  })
   
 }
 

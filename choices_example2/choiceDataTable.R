@@ -15,7 +15,7 @@ choiceDataTable <- function(input, output, session, data) {
   ns <- session$ns
   
   output$dt <- renderDataTable(
-    datatable(data, rownames = FALSE,
+    datatable(data, rownames = TRUE,
               selection = list(mode = "single", target = "column"),
               options = list(dom = "t"))
   )
@@ -49,4 +49,10 @@ choiceDataTable <- function(input, output, session, data) {
     updateRadioButtons(session, "r", 
                        selected = s)
   })
+  
+  selected <- reactive({
+    data[, input$dt_columns_selected + 1]
+  })
+  
+  return(reactive(input$dt_columns_selected + 1))
 }
