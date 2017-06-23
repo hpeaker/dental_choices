@@ -54,5 +54,9 @@ choiceDataTable <- function(input, output, session, data) {
     data[, input$dt_columns_selected + 1]
   })
   
-  return(reactive(input$dt_columns_selected + 1))
+  column_name <- reactive({
+    names(data)[input$dt_columns_selected]
+  })
+  
+  return(column_name)
 }

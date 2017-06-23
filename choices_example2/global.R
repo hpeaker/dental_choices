@@ -14,6 +14,7 @@ source("likertQuestions.R")
 
 NUM_PAGES <- 4
 
+likert_questions = paste("Question", 1:10)
 likert_choices <- c("Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree")
 
 fieldsMandatory <- c("var1", "id", "radio")
@@ -28,7 +29,8 @@ labelMandatory <- function(label) {
 appCSS <-
   ".mandatory_star { color: red; }"
 
-fieldsAll <- c("var1", "id", "block1")
+fieldsAll <- c("var1", "id", "block1", "gender", "age")
+
 responsesDir <- file.path("responses")
 epochTime <- function() {
   as.integer(Sys.time())

@@ -14,7 +14,10 @@ ui <- fluidPage(
               textInput("id", "How often do you use flossing per month", ""),
               # Make a list of checkboxes
               radioButtons("radio", label = h3("Radio buttons"),
-                           choices = list("Choice 1" = 1, "Choice 2" = 2))
+                           choices = list("Choice 1" = 1, "Choice 2" = 2)),
+              selectInput("gender", labelMandatory("What is your gender?"),
+                          choices = c("Female", "Male", "Other", "Prefer Not to Say")),
+              sliderInput("age", labelMandatory("How old are you?"), min = 12, max = 100, value = 50)
             ),
             mainPanel(plotOutput("distPlot"), textOutput("message"))
           )
@@ -39,7 +42,7 @@ ui <- fluidPage(
             column(12, align = "center",
               div(
                 id = "likert_input",
-                likertQuestionsInput("likert", questions = paste("Question", 1:10), choices = likert_choices,
+                likertQuestionsInput("likert", questions = likert_questions, choices = likert_choices,
                                      selected = "Neutral"),
                 actionButton("submit", "Submit", class = "btn-primary")
               ),
@@ -56,9 +59,11 @@ ui <- fluidPage(
     )
   ),
   br(),
-  column(12, align = "center",
-    actionButton("prevBtn", "< Previous"),
-    actionButton("nextBtn", "Next >")
+  div(id = "pager",
+    column(12, align = "center",
+      actionButton("prevBtn", "< Previous"),
+      actionButton("nextBtn", "Next >")
+    )
   )
 )
 

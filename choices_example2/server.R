@@ -11,30 +11,53 @@ design <- caFactorialDesign(data = experiment,type="orthogonal")
 
 d <- as.data.frame(t(as.data.frame(design)))
 
-d$Attributes <- rownames(d)
-d1 <- d[, c("4", "9")]
-names(d1) <- c("Alternative 1", "Alternative 2")
+# d$Attributes <- rownames(d)
+# 
+# d1 <- d[, c("4", "9")]
+# names(d1) <- c("Alternative 1", "Alternative 2")
+# 
+# d2 <- d[, c("4", "10")]
+# names(d2) <- c("Alternative 1", "Alternative 2")
+# d3 <- d[, c("4", "17")]
+# names(d3) <- c("Alternative 1", "Alternative 2")
+# d4 <- d[, c("4", "21")]
+# names(d4) <- c("Alternative 1", "Alternative 2")
+# 
+# d5 <- d[, c("4", "23")]
+# names(d5) <- c("Alternative 1", "Alternative 2")
+# d6 <- d[, c("4", "29")]
+# names(d6) <- c("Alternative 1", "Alternative 2")
+# d7 <- d[, c("4", "42")]
+# names(d7) <- c("Alternative 1", "Alternative 2")
+# d8 <- d[, c("4", "52")]
+# names(d8) <- c("Alternative 1", "Alternative 2")
 
-d2 <- d[, c("4", "10")]
-names(d2) <- c("Alternative 1", "Alternative 2")
-d3 <- d[, c("4", "17")]
-names(d3) <- c("Alternative 1", "Alternative 2")
-d4 <- d[, c("4", "21")]
-names(d4) <- c("Alternative 1", "Alternative 2")
+create_alternatives <- function(d, static, names_out = c("Alternative 1", "Alternative 2")) {
+  cols <- names(d)[names(d) != static]
+  lapply(cols, function(x) {
+    dat <- d[, c(static, x)]
+    names(dat) <- names_out
+    dat
+  })
+}
 
-d5 <- d[, c("4", "23")]
-names(d5) <- c("Alternative 1", "Alternative 2")
-d6 <- d[, c("4", "29")]
-names(d6) <- c("Alternative 1", "Alternative 2")
-d7 <- d[, c("4", "42")]
-names(d7) <- c("Alternative 1", "Alternative 2")
-d8 <- d[, c("4", "52")]
-names(d8) <- c("Alternative 1", "Alternative 2")
+assign_block <- function(d, n) {
+  if(n %% 2 == 0) {
+    return(create_alternatives(d, "4"))
+  } else {
+    return(create_alternatives(d, "52", c("Alternative 3", "Alternative 4")))
+  }
+}
 
-
-
+#alts <- assign_block(d)
+n <- nrow(dat.frame)
+  
+alts <- assign_block(d, n)
 
 server <- function(input, output, session) {
+  
+  
+  observe(print(alts))
   
   rv <- reactiveValues(page = 1)
   
@@ -78,12 +101,11 @@ server <- function(input, output, session) {
   observeEvent(input$prevBtn, navPage(-1))
   observeEvent(input$nextBtn, navPage(1))
   
-  
   output$distPlot <- renderPlot({
     ggplot(dat.frame, aes(responses_df$var1)) +
       geom_density(adjust = 1/2) +
       geom_vline(xintercept = input$var1) +
-      theme_void()
+      theme_minimal()
     
   })
   output$message <- renderPrint({
@@ -136,27 +158,39 @@ server <- function(input, output, session) {
     saveData(formData())
     shinyjs::hide("likert_input")
     shinyjs::show("thankyou_msg")
+    shinyjs::hide("pager")
   })
   
+  # 
+  # a1 <- callModule(choiceDataTable, "one", d1)
+  # a2 <- callModule(choiceDataTable, "two", d2)
+  # a3 <- callModule(choiceDataTable, "three", d3)
+  # a4 <- callModule(choiceDataTable, "four", d4)
+  # 
+  # a5 <- callModule(choiceDataTable, "five", d5)
+  # a6 <- callModule(choiceDataTable, "six", d6)
+  # a7 <- callModule(choiceDataTable, "seven", d7)
+  # a8 <- callModule(choiceDataTable, "eight", d8)
+  # 
+  a1 <- callModule(choiceDataTable, "one", alts[[1]])
+  a2 <- callModule(choiceDataTable, "two", alts[[2]])
+  a3 <- callModule(choiceDataTable, "three", alts[[3]])
+  a4 <- callModule(choiceDataTable, "four", alts[[4]])
   
-  a1 <- callModule(choiceDataTable, "one", d1)
-  a2 <- callModule(choiceDataTable, "two", d2)
-  a3 <- callModule(choiceDataTable, "three", d3)
-  a4 <- callModule(choiceDataTable, "four", d4)
-  
-  a5 <- callModule(choiceDataTable, "five", d5)
-  a6 <- callModule(choiceDataTable, "six", d6)
-  a7 <- callModule(choiceDataTable, "seven", d7)
-  a8 <- callModule(choiceDataTable, "eight", d8)
+  a5 <- callModule(choiceDataTable, "five", alts[[5]])
+  a6 <- callModule(choiceDataTable, "six", alts[[6]])
+  a7 <- callModule(choiceDataTable, "seven", alts[[7]])
+  a8 <- callModule(choiceDataTable, "eight", alts[[8]])
   
   likerts <- callModule(likertQuestions, "likert")
   
   output$likert_plot <- renderPlot({
     likert_frame <- dat.frame[, grepl("likert", names(dat.frame))]
     likert_frame[,] <- lapply(likert_frame, function(x) factor(x, levels = likert_choices))
+    names(likert_frame) <- likert_questions
     
     likert_summ <- likert(likert_frame)
-    plot(likert_summ)
+    plot(likert_summ, group.order = likert_questions)
   })
   
 }
