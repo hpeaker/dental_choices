@@ -14,6 +14,8 @@ likertQuestions <- function(input, output, session) {
   
   likert_inputs <- isolate(names(reactiveValuesToList(input)))
   
+  observe(print(likert_inputs))
+  
   likerts <- reactive({
     vapply(
       likert_inputs,

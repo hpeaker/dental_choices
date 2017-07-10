@@ -42,12 +42,16 @@ create_alternatives <- function(d, static, names_out = c("Alternative 1", "Alter
 }
 
 assign_block <- function(d, n) {
+  #r <- runif(1)
+  #if(r > 0.5) {
   if(n %% 2 == 0) {
     return(create_alternatives(d, "4"))
   } else {
     return(create_alternatives(d, "52", c("Alternative 3", "Alternative 4")))
   }
 }
+
+print(runif(1))
 
 #alts <- assign_block(d)
 n <- nrow(dat.frame)
