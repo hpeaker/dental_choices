@@ -8,13 +8,15 @@ library(devtools)
 library(dplyr)
 library(digest)
 library(likert)
+library(ggplot2)
+library(ggmap)
 
 source("choiceDataTable.R")
 source("likertQuestions.R")
 
 NUM_PAGES <- 4
 
-likert_questions = paste("Question", 1:10)
+likert_questions <- paste("Question", 1:10)
 likert_choices <- c("Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree")
 
 fieldsMandatory <- c("var1", "id", "radio")

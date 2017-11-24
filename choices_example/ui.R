@@ -1,6 +1,6 @@
 source("choice_help.R")
 
-install.packages("conjoint")
+#install.packages("conjoint")
 library(conjoint)
 
 experiment<-expand.grid(

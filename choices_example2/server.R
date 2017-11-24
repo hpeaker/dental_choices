@@ -73,7 +73,11 @@ server <- function(input, output, session) {
   })
   
   observe({
-    if(rv$page == 2) {
+    toggle("city", condition = input$live_uk == "Yes")
+  })
+  
+  observe({
+    if(rv$page == 3) {
       if(length(a1()) == 0 || length(a2()) == 0 || length(a3()) == 0 || length(a4()) == 0) {
         disable(id = "nextBtn")
         return()
@@ -86,7 +90,7 @@ server <- function(input, output, session) {
   })
   
   observe({
-    if(rv$page == 3) {
+    if(rv$page == 4) {
       if(length(a5()) == 0 || length(a6()) == 0 || length(a7()) == 0 || length(a8()) == 0) {
         disable(id = "nextBtn")
         return()
@@ -195,6 +199,25 @@ server <- function(input, output, session) {
     
     likert_summ <- likert(likert_frame)
     plot(likert_summ, group.order = likert_questions)
+  })
+  
+  mapdata <- read.csv("datamap.csv", header=T)
+  # 
+  # map <- get_map(location = 'United Kingdom',zoom=6)
+  # ggmap(map)
+  
+  #ggplot(aes(x=long, y=lat), data=mapdata) +
+  #geom_blank() + coord_map("mercator") 
+  
+  #theme_set(theme_bw(16))
+  
+  output$map <- renderPlot({
+    UKMap <- qmap('United Kingdom', zoom = 5,
+                  color = "bw", legend = "topleft")
+    
+    UKMap +
+      geom_point(aes(x = long, y = lat,colour = long, size = long),
+                 data = mapdata)
   })
   
 }
